@@ -11,13 +11,17 @@ import axios from 'axios';
 import styles from './styles';
 import logo from '../../assets/logo.png';
 import Icon from 'react-native-vector-icons/FontAwesome';
+import BaseUrl from '../../frontendURL';
+import { reporter } from '../../../metro.config';
 
 export default function Register({navigation}) {
   const [isFocusedEmail, setFocusedEmail] = useState(false);
   const [isFocusedPassword, setFocusedPassword] = useState(false);
   const [isFocusedPasswordConfirm, setFocusedPasswordConfirm] = useState(false);
+  const [isFocusedUserName, setFocusedUserName] = useState(false);
 
   const [formValues, setFormValues] = useState({
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -36,7 +40,8 @@ export default function Register({navigation}) {
 
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     // Empty field validation
-    if (!formValues.email.trim()) newErrors.push('Email is required.');
+    if (!formValues.username.trim()) newErrors.push('Username is required.');
+    else if (!formValues.email.trim()) newErrors.push('Email is required.');
     else if (!formValues.password.trim())
       newErrors.push('Password is required.');
     else if (!formValues.confirmPassword.trim())
@@ -60,27 +65,21 @@ export default function Register({navigation}) {
 
   // API Call to Register User
   const handleRegister = async () => {
-    if (!validateForm()) return; // Stop if validation fails
-    Alert.alert('Register', 'Successfully');
-    // try {
-    //   const response = await axios.post('https://your-api.com/register', {
-    //     email: formValues.email,
-    //     password: formValues.password,
-    //   });
+    if (!validateForm()) return; // Stop if validation fails  
+    try {
+      const response = await axios.post(`${BaseUrl}/auth/newregistration`, {
+        username: formValues.username,
+        email: formValues.email,
+        password: formValues.password,
+      });
 
-    //   if (response.status === 201) {
-    //     Alert.alert('Success', 'Registration Successful!');
-    //     navigation.navigate('Login');
-    //   } else {
-    //     Alert.alert('Error', 'Registration Failed!');
-    //   }
-    // } catch (error) {
-    //   Alert.alert(
-    //     'Error',
-    //     error.response?.data?.message || 'Something went wrong!',
-    //   );
-    // }
+      Alert.alert("Response:","Successfully" );
+    } catch (error) {
+      console.log("Error:", error.response?.data || error.message);
+      Alert.alert("Error", error.response?.data?.message || "Something went wrong!");
+    }
   };
+  
   return (
     <View style={styles.container}>
       <View>
@@ -102,6 +101,21 @@ export default function Register({navigation}) {
       )}
 
       <View>
+        {/* User name  */}
+
+        <TextInput
+          style={[styles.input, isFocusedUserName && styles.focused]}
+          placeholder="Enter username"
+          placeholderTextColor="#494F55"
+          selectionColor="#494F55"
+          onFocus={() => setFocusedUserName(true)}
+          onBlur={() => setFocusedUserName(false)}
+          value={formValues.username}
+          importantForAutofill="no"
+          autoComplete="off"
+          onChangeText={text => handleChange('username', text)}
+        />
+
         {/* Email Input */}
         <TextInput
           style={[styles.input, isFocusedEmail && styles.focused]}
